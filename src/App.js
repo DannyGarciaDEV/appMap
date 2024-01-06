@@ -1,33 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './App.css'; // Import your CSS file for styling
 
+
 const App = () => {
-  // State to track the menu open/close status
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  useEffect(() => {
-    // Initialize Leaflet map
-    const map = L.map('map');
-
-
-    // Add a tile layer from OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
-
-    
-  let userMarker;
-  let monumentMarkers = [];
-
-  // Custom icon for the user's marker
-  const userIcon = L.icon({
-    iconUrl: 'https://static.thenounproject.com/png/1631775-200.png',
-    iconSize: [38, 40],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
-  });
+  
+  const userMarkerRef = useRef(false);
+  const monumentMarkersRef = useRef([]);
+  const mapRef = useRef(false);
 
   const monumentPing = L.icon({
     iconUrl: 'https://cdn2.iconfinder.com/data/icons/map-pins-1-01-easylines/128/yumminky-pin-57-512.png',
@@ -36,8 +19,23 @@ const App = () => {
     popupAnchor: [0, -32],
   });
 
+  const userIcon = L.icon({
+    iconUrl: 'https://static.thenounproject.com/png/1631775-200.png',
+    iconSize: [38, 40],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+  });
+ 
   // Create markers for monuments
-  const monumentsData = [
+ const monumentsData = useMemo(() => [
+    { monumentName: "Ether Monument", coordinates: [42.3548286, -71.0714514] },
+    { monumentName: "Make Way for Ducklings", coordinates: [42.355517, -71.069761] },
+    { monumentName: "George Washington Statue, Boston", coordinates: [42.3538483, -71.070949] },
+    { monumentName: "Bagheera Fountain", coordinates: [42.354141, -71.069134] },
+    { monumentName: "9/11 Memorial", coordinates: [42.35272345, -71.07077770812721] },
+    { monumentName: "Triton Babies", coordinates: [42.354667, -71.069472] },
+    { monumentName: "Tadeusz Kosciuszko Statue", coordinates: [42.352556, -71.069083] },
+    { monumentName: "Wendell Phillips Statue", coordinates: [42.352722, -71.068333] },
     { monumentName: "Brewer Fountain", coordinates: [42.3562019, -71.0631027] },
     { monumentName: "The Embrace, Boston", coordinates: [42.354944, -71.0643675] },
     { monumentName: "Soldiers and Sailors Monument", coordinates: [42.3554667, -71.0664122] },
@@ -46,76 +44,115 @@ const App = () => {
     { monumentName: "Parkman Bandstand", coordinates: [42.354343400000005, -71.0655050505814] },
     { monumentName: "Founders Memorial", coordinates: [42.3564942, -71.0675817] },
     { monumentName: "Parkman Plaza", coordinates: [42.355329749999996, -71.06366411207054] },
-    { monumentName: "Ether Monument", coordinates: [42.3548286, -71.0714514] },
-    { monumentName: "George Washington Statue, Boston", coordinates: [42.3538483, -71.070949] },
-    { monumentName: "9/11 Memorial", coordinates: [42.35272345, -71.07077770812721] },
-    { monumentName: "Tadeusz Kosciuszko Statue", coordinates: [42.352556, -71.069083] },
-    { monumentName: "Wendell Phillips Statue", coordinates: [42.352722, -71.068333] },
-    { monumentName: "Bagheera Fountain", coordinates: [42.354141, -71.069134] },
-    { monumentName: "Triton Babies", coordinates: [42.354667, -71.069472] },
-    { monumentName: "Make Way for Ducklings", coordinates: [42.355517, -71.069761] },
-  ];
-  
+], []);
+useEffect(() => {
+  mapRef.current = L.map('map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(mapRef.current); // Use mapRef.current instead of map
 
   monumentsData.forEach((monumentCoor) => {
     const [lat, lon] = monumentCoor.coordinates;
-    const monumentMarker = L.marker([lat, lon], { icon: monumentPing }).addTo(map);
+    const monumentMarker = L.marker([lat, lon], { icon: monumentPing }).addTo(mapRef.current);
     monumentMarker.bindPopup(monumentCoor.monumentName).openPopup();
-    monumentMarkers.push(monumentMarker);
+    monumentMarkersRef.current.push(monumentMarker);
   });
 
-  // Get user's location and update marker in real-time
   if ('geolocation' in navigator) {
     const successCallback = (position) => {
       const { latitude, longitude } = position.coords;
 
-      if (userMarker) {
-        // If marker exists, move it to the new location
-        userMarker.setLatLng([latitude, longitude]);
+      if (userMarkerRef.current) {
+        // Check if userMarkerRef.current is a valid marker instance
+        if (typeof userMarkerRef.current.setLatLng === 'function') {
+          userMarkerRef.current.setLatLng([latitude, longitude]);
+        } else {
+          console.error('userMarkerRef.current is not a valid Leaflet marker instance.');
+        }
       } else {
-        // If marker doesn't exist, create a new one with a custom icon
-        userMarker = L.marker([latitude, longitude], { icon: userIcon }).addTo(map);
-        map.setView([latitude, longitude], 24);
-
-        // Add a popup to the marker
-        userMarker.bindPopup('This is you').openPopup();
+        // Create a new marker if it doesn't exist
+        userMarkerRef.current = L.marker([latitude, longitude], { icon: userIcon }).addTo(mapRef.current);
+        mapRef.current.setView([latitude, longitude], 24);
+        userMarkerRef.current.bindPopup('This is you').openPopup();
       }
     };
+
 
     const errorCallback = (error) => {
       console.error('Error getting location:', error.message);
     };
 
-    // Watch user's position
     const watchId = navigator.geolocation.watchPosition(successCallback, errorCallback);
 
-    // Cleanup function to remove the watcher when the component unmounts
     return () => {
       navigator.geolocation.clearWatch(watchId);
     };
   } else {
     console.error('Geolocation is not supported by your browser.');
   }
-}, []);// Empty dependency array ensures the effect runs once when the component mounts
+}, [monumentsData, monumentPing, userIcon]);
 
-  // Toggle function to open/close the menu
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
-  return (
-    <div className={`main-container ${isMenuOpen ? 'menu-open' : ''}`}>
-      <div className="menu-icon" onClick={toggleMenu}>
-        ☰
-      </div>
-      <div id="map" className="map"></div>
-      <div className="monuments-container">
-        <MonumentsList />
-      </div>
-    </div>
-  );
+const updateMapMarkers = (newMarkers) => {
+  monumentMarkersRef.current.forEach((marker) => marker.removeFrom(mapRef.current));
+
+  newMarkers.forEach((monumentCoor) => {
+    const [lat, lon] = monumentCoor.coordinates;
+    const monumentMarker = L.marker([lat, lon], { icon: monumentPing }).addTo(mapRef.current);
+    monumentMarker.bindPopup(monumentCoor.monumentName).openPopup();
+    monumentMarkersRef.current.push(monumentMarker);
+  });
 };
 
+const filterAndShowSpecificMonuments = () => {
+  const specificMonumentNames = ["Ether Monument", "Make Way for Ducklings", "George Washington Statue, Boston", "Bagheera Fountain", "9/11 Memorial", "Triton Babies", "Tadeusz Kosciuszko Statue", "Wendell Phillips Statue"];
+  const filteredMonuments = monumentsData.filter((monument) => specificMonumentNames.includes(monument.monumentName));
+  updateMapMarkers(filteredMonuments);
+};
+
+const showAdditionalMonuments = () => {
+  const additionalMonumentNames = [
+    "Brewer Fountain",
+    "The Embrace, Boston",
+    "Soldiers and Sailors Monument",
+    "Boston Massacre Memorial",
+    "Robert Gould Shaw and 54th Regiment Memorial",
+    "Parkman Bandstand",
+    "Founders Memorial",
+    "Parkman Plaza",
+  ];
+  const additionalMonuments = monumentsData.filter((monument) =>
+  additionalMonumentNames.includes(monument.monumentName)
+);
+
+updateMapMarkers(additionalMonuments);
+};
+
+const showAllMonuments = () => {
+  updateMapMarkers(monumentsData);
+};
+
+const toggleMenu = () => {
+  setIsMenuOpen(!isMenuOpen);
+};
+
+return (
+  <div className={`main-container ${isMenuOpen ? 'menu-open' : ''}`}>
+    <div className="menu-icon" onClick={toggleMenu}>
+      ☰
+    </div>
+    <div id="map" className="map"></div>
+    <div className="monuments-container">
+      <div className="filter-buttons">
+        <button  className="custom-button blue-button" onClick={filterAndShowSpecificMonuments}>Public Gardern Monuments</button>
+        <button className="custom-button blue-button" onClick={showAllMonuments}>Show All Monuments</button>
+        <button className="custom-button blue-button" onClick={showAdditionalMonuments}>Boston Commons Monuments</button>
+      </div>
+      <MonumentsList />
+    </div>
+  </div>
+);
+};
 const MonumentCard = ({ title, description, img }) => (
   <div className="monument-card">
     <h2>{title}</h2>

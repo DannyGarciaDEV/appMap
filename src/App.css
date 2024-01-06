@@ -4,7 +4,7 @@
 
 
 #map {
-  height: 700px;
+  height: 690px;
   z-index: 99;
 }
 
@@ -69,4 +69,28 @@
   width: 100%;
   height: auto;
   border-radius: 8px;
+}
+
+
+.filter-buttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.blue-button {
+  background-color: #3498db; /* Blue background */
+  border: none;
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding */
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.blue-button:hover {
+  background-color: #2980b9; /* Darker blue on hover */
 }
