@@ -3,13 +3,10 @@
 }
 
 
-#map {
-  height: 690px;
-  z-index: 99;
-}
+
 
 /* Style the hamburger icon */
-.menu-icon {
+/* .menu-icon {
   cursor: pointer;
   background-color: #f5f5f5;
   border: 1px solid #dcdcdc;
@@ -20,7 +17,7 @@
   top: 20px;
   right: 20px;
   z-index: 9999;
-}
+} */
 
 
 /* Style the monuments list container with scroll */
@@ -72,25 +69,76 @@
 }
 
 
-.filter-buttons {
-  text-align: center;
-  margin-top: 10px;
+
+
+#map-container {
+  position: relative;
+}
+
+#map {
+  height: 690px;
+  z-index: 99;
+}
+
+.map-buttons-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column; /* Display buttons in a column */
 }
 
 .blue-button {
-  background-color: #3498db; /* Blue background */
+  background-color: #3498db;
   border: none;
-  color: white; /* White text */
-  padding: 10px 20px; /* Padding */
+  color: white;
+  padding: 10px 20px;
   text-align: center;
   text-decoration: none;
-  display: inline-block;
+  display: block; /* Ensure buttons are displayed as block elements */
   font-size: 16px;
-  margin: 4px 2px;
+  margin-bottom: 8px; /* Add some margin between buttons */
   cursor: pointer;
   border-radius: 5px;
 }
 
 .blue-button:hover {
-  background-color: #2980b9; /* Darker blue on hover */
+  background-color: #2980b9;
+}
+
+/* Media query for tablets and smaller screens */
+@media (max-width: 768px) {
+  #map {
+    height: 600px;
+  }
+
+  .map-buttons-container {
+    top: 10px;
+    right: 10px;
+  }
+
+  .blue-button {
+    font-size: 14px;
+    padding: 8px 16px;
+    margin-bottom: 6px;
+  }
+}
+
+/* Media query for mobile devices */
+@media (max-width: 480px) {
+  #map {
+    height: 300px;
+  }
+
+  .map-buttons-container {
+    top: 5px;
+    right: 5px;
+  }
+
+  .blue-button {
+    font-size: 12px;
+    padding: 6px 12px;
+    margin-bottom: 4px;
+  }
 }

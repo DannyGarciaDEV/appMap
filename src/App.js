@@ -141,18 +141,23 @@ return (
     <div className="menu-icon" onClick={toggleMenu}>
       ☰
     </div>
-    <div id="map" className="map"></div>
+    <div id="map-container">
+      <div id="map" className="map"></div>
+      <div className="map-buttons-container">
+        <button className="blue-button" onClick={filterAndShowSpecificMonuments}>Public Garden Monuments</button>
+        <button className="blue-button" onClick={showAllMonuments}>Show All Monuments</button>
+        <button className="blue-button" onClick={showAdditionalMonuments}>Boston Commons Monuments</button>
+      </div>
+    </div>
     <div className="monuments-container">
       <div className="filter-buttons">
-        <button  className="custom-button blue-button" onClick={filterAndShowSpecificMonuments}>Public Gardern Monuments</button>
-        <button className="custom-button blue-button" onClick={showAllMonuments}>Show All Monuments</button>
-        <button className="custom-button blue-button" onClick={showAdditionalMonuments}>Boston Commons Monuments</button>
+        {/* Your existing buttons for filtering */}
       </div>
       <MonumentsList />
     </div>
   </div>
 );
-};
+}
 const MonumentCard = ({ title, description, img }) => (
   <div className="monument-card">
     <h2>{title}</h2>
