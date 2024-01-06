@@ -110,7 +110,7 @@
 /* Media query for tablets and smaller screens */
 @media (max-width: 768px) {
   #map {
-    height: 600px;
+    height: 690px;
   }
 
   .map-buttons-container {
@@ -128,7 +128,7 @@
 /* Media query for mobile devices */
 @media (max-width: 480px) {
   #map {
-    height: 300px;
+    height: 600px;
   }
 
   .map-buttons-container {
